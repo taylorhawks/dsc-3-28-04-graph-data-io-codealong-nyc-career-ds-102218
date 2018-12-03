@@ -2,7 +2,8 @@
 # Graph Data I/O - code along
 
 ## Introduction
-Data for graphs and networks comes in many different representations. In this lesson, we shall look into loading data from "**Edge lists**" and "**Adjacency Matrix** to create graphs in networkx. We shall also look at different graph formats that networkx is compatible with. 
+
+There are several ways to represent graphs, each with its advantages and disadvantages. Some situations, or algorithms that we want to run with graphs as input, call for one representation, and others call for a different representation. In this lesson, we shall look into loading data from "**Edge lists**" and "**Adjacency Matrix** to create graphs in networkx. We shall also look at different graph formats that networkx is compatible with. 
 
 ## Objectives
 You will be able to:
@@ -13,27 +14,48 @@ You will be able to:
 
 __Note__: Graph representations are related to, but not dependent upon the storage format. In our examples, we'll be loading our data from csv files. You may also have network data stored as `JSON`, `GEXF`, or other formats. For more details, [check the docs](https://networkx.github.io/documentation/latest/reference/readwrite/index.html).
 
-## Grey's Anatomy "Romantic Encounters" Dataset
-![greys anatomy](https://http2.mlstatic.com/greys-anatomy-13-14-temporadas-dublada-digital-D_NQ_NP_758571-MLB26104690139_102017-F.jpg)
-
-Let's look at the data of all "romantic" encounters between characters on the TV show Grey's Anatomy. The dataset is available in the repo as `GA-edge.csv` as an edge list, and `GA-adj.csv` as an adjacency matrix. 
-
 ## Edge Lists
-Edge lists are a common and efficient way of representing graph data. This format is made up of list of tuples, where each tuple represents an edge between two of the nodes in your graph. The nodes of the graph can be inferred by taking the set of objects from all tuples as shown in the image below.
+
+One simple way to represent a graph is just a list, or array, of $∣E∣$ edges which we call an __edge list__. To represent an edge, we just have an array of two vertex numbers [a,b], which tells us that an edge exists between these two vertices. So an edge list is an array of objects containing the vertex numbers of the vertices that the edges are incident on. 
+
+If edges have weights, add either a third element to the array or more information to the object, giving the edge's weight i.e. [a,b,5]. This tells us that an edge exists between a and b with a weight =5.  Since each edge contains just two or three numbers, the total space for an edge list is $Θ(E)$. 
+
+Have a look at this edge list below:
+ 
+ - We see a graph with three disconnected components 
+ - The connections between graph vertices are shown in the edge list on the right
+ - Each node may appear more than once depending on its connectivity with other nodes i.e. o is connected to 1,2,6 and 5. 
+ 
+ So we see edge lists provide us with an easy to understand way of storing large graphs into a list of arrays which can be read into `networkx` or any other popular graph tool to recreate a given graph. 
+
 
 ![](edgelist.png)
 
+Some other benefits of using edge lists are stated below:
 
 - You can infer/determine whether a graph is directed or weighted from an edge list as a 3rd weight attribute can be added to each row. Similarly other edge attributes can also be saved under an edge list
 
-- You can infer/determine whether a graph is directed or weighted from an edge list. For directed graphs, the tuples show a (to,from) tuple which identify the direction of the edge from "to" to "from".  
-
+- For directed graphs, the tuples show a (to,from) tuple which identify the direction of the edge from "to" to "from".  
 
 
 - __Weighted__: If edges appear more than once, or if an additional weight attribute is added as a 3rd column, the graph is weighted
 - __Directed__: If the "From" and "To" (often seen as "Source" and "Target") of an edge in the list is not arbitrary, it's a directed graph
 
-Let's load the Grey's anatomy romantic encounters edge list (undirected) as shown below:
+Here is an example of how an edge list might look like, for a weighted and directed graph
+
+<img src="weighted.png" width=400>
+
+
+
+
+Let's look at a an edge list of a real dataset and how to process it in `python` and `networkx`. 
+
+## Grey's Anatomy "Romantic Encounters" Dataset
+![greys anatomy](https://http2.mlstatic.com/greys-anatomy-13-14-temporadas-dublada-digital-D_NQ_NP_758571-MLB26104690139_102017-F.jpg)
+
+This dataset contains data of all romantic encounters between different characters on the TV show Grey's Anatomy. If you have watched Grey's Anatomy before , this would make a lot of sense to you. Even if you haven't, think of this dataset showing connections between different individuals in a social setting. 
+
+The dataset is available in the repo as `GA-edge.csv` as an edge list, and `GA-adj.csv` as an adjacency matrix. Let's load the Grey's anatomy romantic encounters edge list (undirected) as shown below:
 
 ```python
 # Read the edge list as a list of lists (tuples)
@@ -92,6 +114,8 @@ edge_list
 
 
 
+## Visualize an Edge List 
+
 So the tuples show the romantic encounters between different characters from the show. We can now load this edge list into networkx using `nx.from_edgelist()` method. Let's draw the network to visually inspect the information contained in the csv file. 
 
 ```python
@@ -110,7 +134,7 @@ plt.show()
 ```
 
 
-![png](index_files/index_6_0.png)
+![png](index_files/index_8_0.png)
 
 
 ## Adjacency Matrices
@@ -123,6 +147,8 @@ Adjacency matrix for undirected graph is always symmetric. Adjacency Matrix is a
 Above graph can be shown using an adjacency matrix as shown here
 
 <img src="am1.png" width=200>
+
+## Loading the Adajency Matrices
 
 Let's load the same dataset as above, but from an adjacency matrix this time around, instead of an edge list. We can use pandas for any of these methods to ease out the data loading task, as compared to using a csv reader. Let's see how to do this. 
 
@@ -988,6 +1014,7 @@ type(GA_adj_arr)
 
 
 
+## Visualize an Adjacency Matrix
 Great, now we can load this multidimensional array as a graph using `nx.from_numpy_matrix()` method and visualize it as before.
 
 ```python
@@ -1002,10 +1029,10 @@ nx.draw(GAAdj, with_labels=True)
 ```
 
 
-![png](index_files/index_12_0.png)
+![png](index_files/index_14_0.png)
 
 
-Okie so we can see that we have lost our labels i.e. characters names. This information needs to be imported from the dataframe and create a label mapping dictionary. The `nx.relabel_nodes()` method can be used to remap nodes labels (or any other attributes) as we see below. 
+We can see that we have lost our labels i.e. characters names. This information needs to be imported from the dataframe and create a label mapping dictionary. The `nx.relabel_nodes()` method can be used to remap nodes labels (or any other attributes) as we see below. 
 
 ```python
 # Relabel the graph nodes with column names from dataframe
@@ -1021,7 +1048,7 @@ nx.draw(GAAdj, with_labels=True)
 ```
 
 
-![png](index_files/index_14_0.png)
+![png](index_files/index_16_0.png)
 
 
 ### Are above graphs exactly the same ?
